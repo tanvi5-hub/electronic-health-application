@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { auth, firestore } from '../firebase';
+import React, { useState } from 'react';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
 import firebase from 'firebase/compat/app';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
+import { firestore } from '../firebase';
+import { Timestamp } from 'firebase/firestore';
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -9,20 +12,11 @@ function SignUp() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: '',
-    practice: '',
+    address: '',
+    dateOfBirth: new Date(),
   });
-  const [practices, setPractices] = useState([]);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPractices = async () => {
-      const snapshot = await firestore.collection('practices').get();
-      const practices = snapshot.docs.map((doc) => doc.data());
-      setPractices(practices);
-    };
-    fetchPractices();
-  }, []);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,110 +24,46 @@ function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
+    const { name, email, password, address, dateOfBirth } = formData;
 
     try {
-      const { user } = await auth.createUserWithEmailAndPassword(
-        formData.email,
-        formData.password
-      );
+      const { user } = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      const dobTimestamp = Timestamp.fromDate(new Date(dateOfBirth));
 
-      await firestore.collection('users').doc(user.uid).set({
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        practice: formData.practice,
+      await firestore.collection('user').doc(user.uid).set({
+        user_name: name,
+        user_email: email,
+        user_type_id: 1,
+        user_password: password,
+        otp_code: '',
       });
 
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: '',
-        practice: '',
+      const patientId = firestore.collection('patient').doc().id;
+
+      await firestore.collection('patient').doc(patientId).set({
+        user_id: user.uid,
+        patient_address: address,
+        patient_dob: dobTimestamp,
       });
-      navigate('/signin');
+
+      navigate('/signIn');
+      console.log('User signed up successfully.');
     } catch (error) {
-      console.error('Error signing up:', error);
-    }
-  };
-
-  const signUpWithGoogle = async () => {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const { user } = await auth.signInWithPopup(provider);
-
-      await firestore.collection('users').doc(user.uid).set({
-        name: user.displayName,
-        email: user.email,
-        role: 'patient',
-      });
-
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Error signing up:', error.message);
     }
   };
 
   return (
-    <div>
-      <h2>Sign Up</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={formData.name}
-          onChange={handleChange}
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-        />
-        <select name="role" value={formData.role} onChange={handleChange}>
-          <option value="">Select Role</option>
-          <option value="admin">Admin</option>
-          <option value="patient">Patient</option>
-          <option value="practitioner">Practitioner</option>
-          <option value="doctor">Doctor</option>
-        </select>
-        {(formData.role === 'doctor' || formData.role === 'practitioner') && (
-          <select name="practice" value={formData.practice} onChange={handleChange}>
-            <option value="">Select Practice</option>
-            {practices.map((practice) => (
-              <option key={practice.id} value={practice.id}>
-                {practice.name}
-              </option>
-            ))}
-          </select>
-        )}
-        <button type="submit">Sign Up</button>
-        <button onClick={signUpWithGoogle}>Sign Up with Google</button>
-      </form>
-      <p>Already registered? <a href="/signin">Sign In</a></p>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required />
+      <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+      <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+      <input type="password" name="confirmPassword" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} required />
+      <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
+      <input type="date" name="dateOfBirth" placeholder="Date of Birth" value={formData.dateOfBirth} onChange={handleChange} required />
+      <button type="submit">Sign Up</button>
+    </form>
   );
-}
+};
 
 export default SignUp;

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { auth, firestore } from '../firebase';
+import { useNavigate } from 'react-router';
 import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 function SignIn() {
   const [formData, setFormData] = useState({
@@ -9,74 +11,56 @@ function SignIn() {
     role: '',
   });
 
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const { email, password, role } = formData;
 
     try {
-      await auth.signInWithEmailAndPassword(formData.email, formData.password);
+      await signInWithEmailAndPassword(firebase.auth(), email, password);
 
-      const userDoc = await firestore.collection('users').doc(auth.currentUser.uid).get();
-      const { role } = userDoc.data();
+      switch (role) {
+        case '1':
+          navigate('/patientDashboard');
+          break;
+        case '2':
+          navigate('/doctorDashboard');
+          break;
+        case '3':
+          navigate('/practitionerDashboard');
+          break;
+        case '4':
+          navigate('/adminDashboard');
+          break;
+        default:
+          console.error('Invalid role selected');
+      }
 
-      setFormData({
-        email: '',
-        password: '',
-        role: '',
-      });
-
+      console.log('User signed in successfully.');
     } catch (error) {
-      console.error('Error signing in:', error);
-    }
-  };
-
-  const signInWithGoogle = async () => {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      await auth.signInWithPopup(provider);
-
-      const userDoc = await firestore.collection('users').doc(auth.currentUser.uid).get();
-      const { role } = userDoc.data();
-
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Error signing in:', error.message);
     }
   };
 
   return (
-    <div>
-      <h2>Sign In</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-        <select name="role" value={formData.role} onChange={handleChange}>
-          <option value="">Select Role</option>
-          <option value="admin">Admin</option>
-          <option value="patient">Patient</option>
-          <option value="practitioner">Practitioner</option>
-          <option value="doctor">Doctor</option>
-        </select>
-        <button type="submit">Sign In</button>
-        <button onClick={signInWithGoogle}>Sign In with Google</button>
-      </form>
-      <p>Not registered yet? <a href="/signup">Sign Up</a></p>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+      <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+      <select name="role" value={formData.role} onChange={handleChange} required>
+        <option value="">Select Role</option>
+        <option value="1">Patient</option>
+        <option value="2">Doctor</option>
+        <option value="3">Practitioner</option>
+        <option value="4">Admin</option>
+      </select>
+      <button type="submit">Sign In</button>
+    </form>
   );
-}
+};
 
 export default SignIn;

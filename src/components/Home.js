@@ -6,11 +6,11 @@ function Home() {
     const navigate = useNavigate();
 
     function handleSignIn() {
-        navigate('/signIn');
+        navigate('/SignIn');
     }
 
     function handleSignUp() {
-        navigate('/signUp');
+        navigate('/SignUp');
     }
 
     return (

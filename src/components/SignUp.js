@@ -3,8 +3,10 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import firebase from 'firebase/compat/app';
 import { useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import { firestore } from '../firebase';
 import { Timestamp } from 'firebase/firestore';
+import './SignUp-SignIn.css';
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -46,7 +48,7 @@ function SignUp() {
         patient_dob: dobTimestamp,
       });
 
-      navigate('/signIn');
+      navigate('/SignIn');
       console.log('User signed up successfully.');
     } catch (error) {
       console.error('Error signing up:', error.message);
@@ -54,15 +56,41 @@ function SignUp() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required />
-      <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-      <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-      <input type="password" name="confirmPassword" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} required />
-      <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
-      <input type="date" name="dateOfBirth" placeholder="Date of Birth" value={formData.dateOfBirth} onChange={handleChange} required />
-      <button type="submit">Sign Up</button>
-    </form>
+    <div className="card-container"> {/* Center the form and create a card-like layout */}
+      <div className="card">
+        <h2>Sign Up</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Name:</label>
+            <input type="text" id="name" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="address">Address:</label>
+            <input type="text" id="address" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="dateOfBirth">Date of Birth:</label>
+            <input type="date" id="dateOfBirth" name="dateOfBirth" placeholder="Date of Birth" value={formData.dateOfBirth} onChange={handleChange} required />
+          </div>
+          <button type="submit">Sign Up</button>
+          <div className="mt-3 text-center">
+            Already signed up? <Link to="/SignIn">Sign in</Link>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

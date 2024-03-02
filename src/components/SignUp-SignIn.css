@@ -43,6 +43,10 @@ select[name="role"] {
   border-radius: 5px;
 }
 
+.error {
+  color: red;
+}
+
 button {
   width: 95%;
   background-color: #007bff;

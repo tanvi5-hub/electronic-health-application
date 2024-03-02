@@ -54,15 +54,29 @@ function SignIn() {
         <h2>Sign In</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+            <label>Email:</label>
+            <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="Email" 
+            value={formData.email} 
+            onChange={handleChange} 
+            required />
           </div>
           <div className="form-group">
-            <label htmlFor="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+            <label>Password:</label>
+            <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            placeholder="Password" 
+            value={formData.password} 
+            onChange={handleChange} 
+            required />
           </div>
           <div className="form-group">
-            <label htmlFor="role">Select Role:</label>
+            <label>Select Role:</label>
             <select name="role" id="role" value={formData.role} onChange={handleChange} required>
               <option value="">Select Role</option>
               <option value="1">Patient</option>
